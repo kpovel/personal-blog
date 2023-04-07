@@ -1,4 +1,5 @@
 import Head from 'next/head'
+import Layout from '../components/layout/layout'
 
 export default function Home() {
   return (
@@ -9,11 +10,9 @@ export default function Home() {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <main>
-        <h1 className="text-3xl font-bold underline color-blue-800 text-purple-700">
-          Hello world!
-        </h1>
-      </main>
+       <Layout>
+        <h1>Personal blog</h1>
+       </Layout>
     </>
   )
 }
