@@ -3,11 +3,7 @@ import Layout from "../components/layout/layout";
 import { trpc } from "@/utils/trpc";
 
 export default function Home() {
-  const user = trpc.userById.useQuery("1");
-
-  if (!user.data) {
-    return <div>Loading...</div>;
-  }
+  const blogPosts = trpc.allBlogPosts.useQuery();
 
   return (
     <>
@@ -18,8 +14,22 @@ export default function Home() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <Layout>
-        <h1>Personal blog</h1>
-        <p>Hi, my name is {user.data.name ?? "Error, no such user!"}</p>
+        <h2 className="mb-4 text-2xl font-bold">Recent Posts</h2>
+        {!blogPosts.data ? (
+          <p className="text-lg italic">Loading...</p>
+        ) : (
+          <ul className="space-y-6">
+            {blogPosts.data.map((post) => (
+              <li key={post.id} className="border-b pb-4">
+                <h3 className="text-xl font-semibold">{post.title}</h3>
+                <p className="text-sm text-gray-500">By: {post.author.name}</p>
+                <p className="text-sm text-gray-500">
+                  Created at: {new Date(post.createdAt).toLocaleString()}
+                </p>
+              </li>
+            ))}
+          </ul>
+        )}
       </Layout>
     </>
   );
