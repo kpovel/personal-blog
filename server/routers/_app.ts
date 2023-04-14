@@ -19,6 +19,24 @@ export const appRouter = router({
       include: { author: true },
     });
   }),
+  getPostById: publicProcedure
+    .input(z.object({ postId: z.string() }))
+    .query(async ({ input }) => {
+      const { postId } = input;
+
+      const post = await prisma.blogPost.findUnique({
+        where: { id: parseInt(postId) },
+      });
+
+      if (!post) throw new Error("Post not found");
+      return post;
+    }),
+  allPostIds: publicProcedure.query(async () => {
+    const ids = await prisma.blogPost.findMany({
+      select: { id: true },
+    });
+    return ids.map(({ id }) => id);
+  }),
 });
 
 export type AppRouter = typeof appRouter;
