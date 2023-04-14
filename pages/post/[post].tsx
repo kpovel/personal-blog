@@ -1,18 +1,37 @@
 import Layout from "@/components/layout/layout";
 import { GetServerSideProps } from "next";
-import type { BlogPost as PostType } from "@prisma/client";
 import { appRouter } from "@/server/routers/_app";
+import Head from "next/head";
+import { SerializedBlogPost } from "@/pages";
+import { format } from "date-fns";
 
-type PostProps = {
-  post: PostType;
-};
+export default function Post({ post }: { post: SerializedBlogPost }) {
+  const paragraphs = post.content.split("  ");
 
-export default function Post({ post }: PostProps) {
   return (
-    <Layout>
-      <h1>{post.title}</h1>
-      <p>{post.content}</p>
-    </Layout>
+    <>
+      <Head>
+        <title>{post.title}</title>
+        <meta name="description" content={post.content} />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link rel="icon" href="/favicon.ico" />
+      </Head>
+      <Layout>
+        <div className="max-w-2xl">
+          <h1 className="mb-4 text-4xl font-semibold">{post.title}</h1>
+          <p className="mb-2 text-sm text-gray-600">By: {post.author.name}</p>
+          <p className="mb-6 text-xs text-gray-500">
+            {format(new Date(post.createdAt), "q MMMM yyyy, HH:mm")}
+          </p>
+          <hr className="mb-6 border-gray-300" />
+          <div className="mb-6 space-y-4">
+            {paragraphs.map((paragraph, index) => (
+              <p key={index}>{paragraph}</p>
+            ))}
+          </div>
+        </div>
+      </Layout>
+    </>
   );
 }
 

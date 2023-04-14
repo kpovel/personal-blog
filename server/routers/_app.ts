@@ -26,6 +26,7 @@ export const appRouter = router({
 
       const post = await prisma.blogPost.findUnique({
         where: { id: parseInt(postId) },
+        include: { author: true },
       });
 
       if (!post) throw new Error("Post not found");

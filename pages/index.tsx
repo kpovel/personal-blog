@@ -5,7 +5,7 @@ import { appRouter } from "@/server/routers/_app";
 import { BlogPost, User as Author } from "@prisma/client";
 import { format, formatISO } from "date-fns";
 
-type SerializedBlogPost = BlogPost & {
+export type SerializedBlogPost = BlogPost & {
   author: Author;
 };
 
