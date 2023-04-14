@@ -1,11 +1,19 @@
 import Head from "next/head";
 import Layout from "../components/layout/layout";
-import { trpc } from "@/utils/trpc";
 import Link from "next/link";
+import { appRouter } from "@/server/routers/_app";
+import { BlogPost, User as Author } from "@prisma/client";
+import { format, formatISO } from "date-fns";
 
-export default function Home() {
-  const blogPosts = trpc.allBlogPosts.useQuery();
+type SerializedBlogPost = BlogPost & {
+  author: Author;
+};
 
+export default function Home({
+  blogPosts,
+}: {
+  blogPosts: SerializedBlogPost[];
+}) {
   return (
     <>
       <Head>
@@ -15,11 +23,11 @@ export default function Home() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <Layout>
-        {!blogPosts.data ? (
+        {!blogPosts ? (
           <p className="text-lg italic">Loading...</p>
         ) : (
           <ul className="space-y-6">
-            {blogPosts.data.map((post) => (
+            {blogPosts.map((post) => (
               <li
                 key={post.id}
                 className="border-b bg-center pb-4 last:border-0"
@@ -32,7 +40,8 @@ export default function Home() {
                 </Link>
                 <p className="text-sm text-gray-500">By: {post.author.name}</p>
                 <p className="text-sm text-gray-500">
-                  Created at: {new Date(post.createdAt).toLocaleString()}
+                  Created at:{" "}
+                  {format(new Date(post.createdAt), "q MMMM yyyy, HH:mm")}
                 </p>
               </li>
             ))}
@@ -42,3 +51,22 @@ export default function Home() {
     </>
   );
 }
+
+export const getStaticProps = async () => {
+  const caller = appRouter.createCaller({});
+  const blogPosts = await caller.allBlogPosts();
+
+  const serializedBlogPosts = blogPosts.map((post) => {
+    return {
+      ...post,
+      createdAt: formatISO(post.createdAt),
+    };
+  });
+
+  return {
+    props: {
+      blogPosts: serializedBlogPosts,
+    },
+    revalidate: 20,
+  };
+};
