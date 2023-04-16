@@ -1,5 +1,5 @@
 import Layout from "@/components/layout/layout";
-import { GetServerSideProps } from "next";
+import { GetStaticPaths, GetStaticProps } from "next";
 import { appRouter } from "@/server/routers/_app";
 import Head from "next/head";
 import { SerializedBlogPost } from "@/pages";
@@ -35,7 +35,7 @@ export default function Post({ post }: { post: SerializedBlogPost }) {
   );
 }
 
-export const getStaticProps: GetServerSideProps = async ({ params }) => {
+export const getStaticProps: GetStaticProps = async ({ params }) => {
   try {
     const caller = appRouter.createCaller({});
     const post = await caller.getPostById({ postId: params?.post as string });
@@ -48,15 +48,15 @@ export const getStaticProps: GetServerSideProps = async ({ params }) => {
     return {
       props: {
         post: postWithSerializableDate,
-        revalidate: 20,
       },
+      revalidate: 20,
     };
   } catch (error) {
     return { notFound: true };
   }
 };
 
-export const getStaticPaths = async () => {
+export const getStaticPaths: GetStaticPaths = async () => {
   const caller = appRouter.createCaller({});
   const posts = await caller.allPostIds();
 
