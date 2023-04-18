@@ -4,7 +4,7 @@ import Link from "next/link";
 import { appRouter } from "@/server/routers/_app";
 import { BlogPost, User as Author } from "@prisma/client";
 import { format, formatISO } from "date-fns";
-import { useMemo } from "react";
+import { useEffect, useState } from "react";
 import { GetStaticProps } from "next";
 
 export type SerializedBlogPost = BlogPost & {
@@ -17,10 +17,14 @@ export default function Home({
 }: {
   blogPosts: SerializedBlogPost[];
 }) {
-  const formattedCreationDates = useMemo(() => {
-    return blogPosts.map((post) =>
+  const [createdDates, setCreatedDates] = useState<string[]>([]);
+
+  useEffect(() => {
+    const formattedCreatedDate = blogPosts.map((post) =>
       format(new Date(post.createdAt), "d MMMM yyyy, HH:mm")
     );
+
+    setCreatedDates(formattedCreatedDate);
   }, [blogPosts]);
 
   return (
@@ -49,7 +53,7 @@ export default function Home({
                 </Link>
                 <p className="text-sm text-gray-500">By: {post.author.name}</p>
                 <p className="text-sm text-gray-500">
-                  Created at: {formattedCreationDates[index]}
+                  Created at: {createdDates[index]}
                 </p>
               </li>
             ))}
