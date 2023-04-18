@@ -3,10 +3,15 @@ import { GetStaticPaths, GetStaticProps } from "next";
 import { appRouter } from "@/server/routers/_app";
 import Head from "next/head";
 import { SerializedBlogPost } from "@/pages";
-import { format } from "date-fns";
+import { format, formatISO } from "date-fns";
+import { useMemo } from "react";
 
 export default function Post({ post }: { post: SerializedBlogPost }) {
   const paragraphs = post.content.split("  ");
+
+  const formattedCreationDate = useMemo(() => {
+    return format(new Date(post.createdAt), "q MMMM yyyy, HH:mm");
+  }, [post.createdAt]);
 
   return (
     <>
@@ -20,8 +25,8 @@ export default function Post({ post }: { post: SerializedBlogPost }) {
         <div className="max-w-2xl">
           <h1 className="mb-4 text-4xl font-semibold">{post.title}</h1>
           <p className="mb-2 text-sm text-gray-600">By: {post.author.name}</p>
-          <p className="mb-6 text-xs text-gray-500">
-            {format(new Date(post.createdAt), "q MMMM yyyy, HH:mm")}
+          <p className="mb-6 text-sm text-gray-600">
+            Created at: {formattedCreationDate}
           </p>
           <hr className="mb-6 border-gray-300" />
           <div className="mb-6 space-y-4">
@@ -42,7 +47,7 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
 
     const postWithSerializableDate = {
       ...post,
-      createdAt: post.createdAt.toISOString(),
+      createdAt: formatISO(post.createdAt),
     };
 
     return {

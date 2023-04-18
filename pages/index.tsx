@@ -4,9 +4,12 @@ import Link from "next/link";
 import { appRouter } from "@/server/routers/_app";
 import { BlogPost, User as Author } from "@prisma/client";
 import { format, formatISO } from "date-fns";
+import { useMemo } from "react";
+import { GetStaticProps } from "next";
 
 export type SerializedBlogPost = BlogPost & {
   author: Author;
+  createdAt: string;
 };
 
 export default function Home({
@@ -14,6 +17,12 @@ export default function Home({
 }: {
   blogPosts: SerializedBlogPost[];
 }) {
+  const formattedCreationDates = useMemo(() => {
+    return blogPosts.map((post) =>
+      format(new Date(post.createdAt), "d MMMM yyyy, HH:mm")
+    );
+  }, [blogPosts]);
+
   return (
     <>
       <Head>
@@ -27,7 +36,7 @@ export default function Home({
           <p className="text-lg italic">Loading...</p>
         ) : (
           <ul className="space-y-6">
-            {blogPosts.map((post) => (
+            {blogPosts.map((post, index) => (
               <li
                 key={post.id}
                 className="border-b bg-center pb-4 last:border-0"
@@ -40,8 +49,7 @@ export default function Home({
                 </Link>
                 <p className="text-sm text-gray-500">By: {post.author.name}</p>
                 <p className="text-sm text-gray-500">
-                  Created at:{" "}
-                  {format(new Date(post.createdAt), "q MMMM yyyy, HH:mm")}
+                  Created at: {formattedCreationDates[index]}
                 </p>
               </li>
             ))}
@@ -52,7 +60,7 @@ export default function Home({
   );
 }
 
-export const getStaticProps = async () => {
+export const getStaticProps: GetStaticProps = async () => {
   const caller = appRouter.createCaller({});
   const blogPosts = await caller.allBlogPosts();
 
