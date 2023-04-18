@@ -13,7 +13,7 @@ export default function Post({ post }: { post: SerializedBlogPost }) {
   useEffect(() => {
     const formattedCreationDate = format(
       new Date(post.createdAt),
-      "q MMMM yyyy, HH:mm"
+      "d MMMM yyyy, HH:mm"
     );
 
     setCreatedDate(formattedCreationDate);
