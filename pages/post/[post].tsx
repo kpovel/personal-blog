@@ -1,12 +1,23 @@
 import Layout from "@/components/layout/layout";
-import { GetServerSideProps } from "next";
+import { GetStaticPaths, GetStaticProps } from "next";
 import { appRouter } from "@/server/routers/_app";
 import Head from "next/head";
 import { SerializedBlogPost } from "@/pages";
-import { format } from "date-fns";
+import { format, formatISO } from "date-fns";
+import { useEffect, useState } from "react";
 
 export default function Post({ post }: { post: SerializedBlogPost }) {
   const paragraphs = post.content.split("  ");
+  const [createdDate, setCreatedDate] = useState<string>();
+
+  useEffect(() => {
+    const formattedCreationDate = format(
+      new Date(post.createdAt),
+      "d MMMM yyyy, HH:mm"
+    );
+
+    setCreatedDate(formattedCreationDate);
+  }, [post.createdAt]);
 
   return (
     <>
@@ -20,8 +31,8 @@ export default function Post({ post }: { post: SerializedBlogPost }) {
         <div className="max-w-2xl">
           <h1 className="mb-4 text-4xl font-semibold">{post.title}</h1>
           <p className="mb-2 text-sm text-gray-600">By: {post.author.name}</p>
-          <p className="mb-6 text-xs text-gray-500">
-            {format(new Date(post.createdAt), "q MMMM yyyy, HH:mm")}
+          <p className="mb-6 text-sm text-gray-600">
+            Created at: {createdDate}
           </p>
           <hr className="mb-6 border-gray-300" />
           <div className="mb-6 space-y-4">
@@ -35,28 +46,28 @@ export default function Post({ post }: { post: SerializedBlogPost }) {
   );
 }
 
-export const getStaticProps: GetServerSideProps = async ({ params }) => {
+export const getStaticProps: GetStaticProps = async ({ params }) => {
   try {
     const caller = appRouter.createCaller({});
     const post = await caller.getPostById({ postId: params?.post as string });
 
     const postWithSerializableDate = {
       ...post,
-      createdAt: post.createdAt.toISOString(),
+      createdAt: formatISO(post.createdAt),
     };
 
     return {
       props: {
         post: postWithSerializableDate,
-        revalidate: 20,
       },
+      revalidate: 20,
     };
   } catch (error) {
     return { notFound: true };
   }
 };
 
-export const getStaticPaths = async () => {
+export const getStaticPaths: GetStaticPaths = async () => {
   const caller = appRouter.createCaller({});
   const posts = await caller.allPostIds();
 
